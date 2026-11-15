@@ -1,0 +1,40 @@
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build output
+/build/
+/dist/
+*.jar
+
+# Go workspace
+go.work
+go.work.sum
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
