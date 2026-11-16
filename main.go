@@ -112,7 +112,7 @@ func handlePlayer(client *minecraft2.Client, profile minecraft2.GameProfile, dis
 					panic(err)
 				}
 			}
-			ip, err := netip.ParseAddr(client.Conn.RemoteAddr().String())
+			ip, err := netip.ParseAddr(strings.Split(client.Conn.RemoteAddr().String(), ":")[0])
 			if err != nil {
 				panic(err)
 			}
