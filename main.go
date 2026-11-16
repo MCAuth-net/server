@@ -134,6 +134,9 @@ func handlePlayer(client *minecraft2.Client, profile minecraft2.GameProfile, dis
 					Valid:  false,
 				},
 			})
+			if err == nil {
+				disconnect("successfully connected")
+			}
 		}
 	}
 
