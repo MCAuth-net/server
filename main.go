@@ -17,7 +17,7 @@ import (
 
 func main() {
 	favicon, err := os.ReadFile("./server-icon.png")
-	if err == nil {
+	if err == nil && len(favicon) > 0 {
 		minecraft2.Favicon = base64.StdEncoding.EncodeToString(favicon)
 	}
 
