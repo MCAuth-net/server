@@ -34,7 +34,7 @@ func NewMinecraftServer(handler PlayerHandler) {
 	}
 
 	port := os.Getenv("PORT")
-	fmt.Println("Bind on " + port)
+	fmt.Println("Bound on " + port)
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		panic(err)
