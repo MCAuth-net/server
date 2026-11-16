@@ -2,15 +2,20 @@ package main
 
 import (
 	"MCAuth-server/internal/database"
+	"MCAuth-server/internal/helpers"
 	minecraft2 "MCAuth-server/internal/minecraft"
 	"context"
 	"encoding/base64"
 	"fmt"
 	"log"
+	"net/netip"
 	"os"
 	"strconv"
+	"strings"
 	"time"
+	"uuid"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 )
@@ -74,6 +79,64 @@ func main() {
 }
 
 func handlePlayer(client *minecraft2.Client, profile minecraft2.GameProfile, disconnect func(string), queries *database.Queries, rdb *redis.Client) {
+	addr := client.ServerAddress
+	if before, ok := strings.CutSuffix(addr, ".mcauth.net"); ok {
+		token := before
+
+		ctx, cancel := helpers.GetContext()
+		defer cancel()
+
+		exists, err := rdb.Exists(ctx, fmt.Sprintf("token:%s", token)).Result()
+		if err != nil {
+			panic(err)
+		}
+		if exists > 0 {
+			err := rdb.Set(ctx, fmt.Sprintf("token:%s", token), "true", time.Minute).Err()
+			if err != nil {
+				panic(err)
+			}
+			u, err := uuid.Parse(profile.ID)
+			if err != nil {
+				panic(err)
+			}
+			id, err := queries.CreateAccount(ctx, pgtype.UUID{
+				Bytes: u,
+				Valid: true,
+			})
+			if err != nil {
+				id, err = queries.CheckAccount(ctx, pgtype.UUID{
+					Bytes: u,
+					Valid: true,
+				})
+				if err != nil {
+					panic(err)
+				}
+			}
+			ip, err := netip.ParseAddr(client.Conn.RemoteAddr().String())
+			if err != nil {
+				panic(err)
+			}
+			_, err = queries.CreateLogin(ctx, database.CreateLoginParams{
+				AccountID: id,
+				Uuid: pgtype.UUID{
+					Bytes: u,
+					Valid: true,
+				},
+				Token:           token,
+				Ip:              ip,
+				ProtocolVersion: int16(client.Protocol),
+				Brand: pgtype.Text{
+					String: "",
+					Valid:  false,
+				},
+				Lang: pgtype.Text{
+					String: "",
+					Valid:  false,
+				},
+			})
+		}
+	}
+
 	disconnect("not implemented")
 }
 

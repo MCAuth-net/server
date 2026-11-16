@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const apiUrl = "https://git.jgj52.dev/api/v1/repos/MCAuth/api/contents/src/main/resources/db/migration"
+const apiUrl = "https://git.jgj52.dev/api/v1/repos/MCAuth/api/contents/migration"
 
 type contentsEntry struct {
 	Name        string `json:"name"`

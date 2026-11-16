@@ -11,7 +11,10 @@ import (
 )
 
 type Querier interface {
-	GetPlayer(ctx context.Context, id pgtype.UUID) (MinecraftAccount, error)
+	AddUUID(ctx context.Context, arg AddUUIDParams) (int64, error)
+	CheckAccount(ctx context.Context, uuid pgtype.UUID) (int64, error)
+	CreateAccount(ctx context.Context, uuid pgtype.UUID) (int64, error)
+	CreateLogin(ctx context.Context, arg CreateLoginParams) (int64, error)
 }
 
 var _ Querier = (*Queries)(nil)
