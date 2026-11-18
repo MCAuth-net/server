@@ -80,18 +80,13 @@ func main() {
 
 func handlePlayer(client *minecraft2.Client, profile minecraft2.GameProfile, disconnect func(string), queries *database.Queries, rdb *redis.Client) {
 	addr := client.ServerAddress
-	if before, ok := strings.CutSuffix(addr, ".mcauth.net"); ok {
-		token := before
-
+	if mnemonic, ok := strings.CutSuffix(addr, ".mcauth.net"); ok {
 		ctx, cancel := helpers.GetContext()
 		defer cancel()
 
-		exists, err := rdb.Exists(ctx, fmt.Sprintf("token:%s", token)).Result()
-		if err != nil {
-			panic(err)
-		}
-		if exists > 0 {
-			err := rdb.Set(ctx, fmt.Sprintf("token:%s", token), "true", time.Minute).Err()
+		token, err := rdb.Get(ctx, fmt.Sprintf("mnemonic:%s", mnemonic)).Result()
+		if err == nil {
+			err := rdb.Set(ctx, fmt.Sprintf("mnemonic:%s", mnemonic), "true", time.Minute).Err()
 			if err != nil {
 				panic(err)
 			}
@@ -140,7 +135,7 @@ func handlePlayer(client *minecraft2.Client, profile minecraft2.GameProfile, dis
 		}
 	}
 
-	disconnect("not implemented")
+	disconnect("token not found")
 }
 
 func getEnv(key, fallback string) string {
