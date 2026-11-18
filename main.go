@@ -84,12 +84,8 @@ func handlePlayer(client *minecraft2.Client, profile minecraft2.GameProfile, dis
 		ctx, cancel := helpers.GetContext()
 		defer cancel()
 
-		token, err := rdb.Get(ctx, fmt.Sprintf("mnemonic:%s", mnemonic)).Result()
+		token, err := rdb.GetDel(ctx, fmt.Sprintf("mnemonic:%s", mnemonic)).Result()
 		if err == nil {
-			err := rdb.Set(ctx, fmt.Sprintf("token:%s", token), "true", time.Minute).Err()
-			if err != nil {
-				panic(err)
-			}
 			u, err := uuid.Parse(profile.ID)
 			if err != nil {
 				panic(err)
@@ -107,7 +103,7 @@ func handlePlayer(client *minecraft2.Client, profile minecraft2.GameProfile, dis
 					panic(err)
 				}
 			}
-			ip, err := netip.ParseAddr(strings.Split(client.Conn.RemoteAddr().String(), ":")[0])
+			ip, err := netip.ParseAddrPort(client.Conn.RemoteAddr().String())
 			if err != nil {
 				panic(err)
 			}
@@ -118,7 +114,7 @@ func handlePlayer(client *minecraft2.Client, profile minecraft2.GameProfile, dis
 					Valid: true,
 				},
 				Token:           token,
-				Ip:              ip,
+				Ip:              ip.Addr(),
 				ProtocolVersion: int16(client.Protocol),
 				Brand: pgtype.Text{
 					String: "",
@@ -129,8 +125,13 @@ func handlePlayer(client *minecraft2.Client, profile minecraft2.GameProfile, dis
 					Valid:  false,
 				},
 			})
+			if err != nil {
+				panic(err)
+			}
+			err = rdb.Set(ctx, fmt.Sprintf("token:%s", token), "true", time.Minute).Err()
 			if err == nil {
 				disconnect("successfully connected")
+				return
 			}
 		}
 	}
