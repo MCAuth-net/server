@@ -86,7 +86,7 @@ func handlePlayer(client *minecraft2.Client, profile minecraft2.GameProfile, dis
 
 		token, err := rdb.Get(ctx, fmt.Sprintf("mnemonic:%s", mnemonic)).Result()
 		if err == nil {
-			err := rdb.Set(ctx, fmt.Sprintf("mnemonic:%s", mnemonic), "true", time.Minute).Err()
+			err := rdb.Set(ctx, fmt.Sprintf("token:%s", token), "true", time.Minute).Err()
 			if err != nil {
 				panic(err)
 			}
